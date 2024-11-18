@@ -3,7 +3,6 @@ import {Server, Socket} from "socket.io";
 import CacheSystem from "./CacheSystem";
 
 export default class UpdatePartialObject {
-    private socket: Socket;
     private io: Server;
     private map: CacheSystem;
 
@@ -12,40 +11,41 @@ export default class UpdatePartialObject {
         this.map = cacheSystem;
     }
 
-    startedInstances(socket: Socket) {
-        this.socket = socket;
-
-        this.createInstances();
-    }
-
-    private createInstances() {
-        this.socket.on('add-object', (data: TAddObject) => {
+    createInstances(socket: Socket) {
+        socket.on('add-object', (data: TAddObject) => {
             const eventName: string = `update-${data.id}-${data.name}-`;
             let obj: any;
 
             if(!this.map.has(`${data.id}-${data.name}`)) {
                 this.map.set(`${data.id}-${data.name}`, data.obj);
-                obj = data.obj;
+                obj = {
+                    ...data.obj,
+                    last_update_at: undefined
+                };
             } else {
                 obj = this.map.get(`${data.id}-${data.name}`);
-                this.socket.emit(`current-obj-${data.id}-${data.name}`, obj);
+                socket.emit(`current-obj-${data.id}-${data.name}`, {
+                    ...obj,
+                    last_update_at: undefined,
+                });
             }
 
             Object.keys(obj).forEach((key: string) => {
-                this.updateObjectOnSocket(eventName + key, data, key);
+                if(typeof obj[key] !== "object") {
+                    this.updateObjectOnSocket(socket, eventName + key, data, key);
+                }
             });
         });
     }
 
-    private updateObjectOnSocket(eventName: string, data: TAddObject, value: string) {
-        this.socket.on(eventName, (setValue: any) => {
+    private updateObjectOnSocket(socket: Socket, eventName: string, data: TAddObject, value: string) {
+        socket.on(eventName, (setValue: any) => {
             const currentObj = this.map.get(`${data.id}-${data.name}`);
-            this.map.set(`${data.id}-${data.name}`, {
-                ...currentObj,
-                [value]: setValue,
-            });
 
-            this.io.emit(eventName, setValue);
+            if(value in currentObj) {
+                currentObj[value] = setValue;
+                this.io.emit(eventName, setValue);
+            }
         });
     }
 }

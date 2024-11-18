@@ -29,10 +29,8 @@ export default class ObjSocket {
   }
 
   static async newObjInSocket<T extends object>(id: number, name: string, instance: T): Promise<T> {
-    const proxyObject = await this.createProxyObject<T>(id, name, instance);
     await this.setObjInSocket<T>(id, name, instance);
-
-    return proxyObject;
+    return this.createProxyObject<T>(id, name, instance);
   }
 
   private static async createProxyObject<T extends object>(id: number, name: string, instance: T): T {
@@ -68,9 +66,11 @@ export default class ObjSocket {
     });
 
     Object.keys(instance).forEach((key: string) => {
-      socket.on(`update-${id}-${name}-${key}`, (setValue: any) => {
-        instance[key] = setValue;
-      });
+      if(typeof instance[key] !== "object") {
+        socket.on(`update-${id}-${name}-${key}`, (setValue: any) => {
+          instance[key] = setValue;
+        });
+      }
     });
   }
 }
