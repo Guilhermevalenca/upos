@@ -13,7 +13,6 @@ export default class UpdatePartialObject {
 
     createInstances(socket: Socket) {
         socket.on('add-object', (data: TAddObject) => {
-            const eventName: string = `update-${data.id}-${data.name}-`;
             let obj: any;
 
             if(!this.map.has(`${data.id}-${data.name}`)) {
@@ -30,6 +29,7 @@ export default class UpdatePartialObject {
                 });
             }
 
+            const eventName: string = `update-${data.id}-${data.name}-`;
             Object.keys(obj).forEach((key: string) => {
                 if(typeof obj[key] !== "object") {
                     this.updateObjectOnSocket(socket, eventName + key, data, key);
