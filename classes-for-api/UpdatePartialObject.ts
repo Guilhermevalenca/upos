@@ -1,4 +1,5 @@
 import type TAddObject from "./types/TAddObject";
+import type TAction from './types/TAction';
 import {Server, Socket} from "socket.io";
 import CacheSystem from "./CacheSystem";
 
@@ -11,7 +12,10 @@ export default class UpdatePartialObject {
         this.map = cacheSystem;
     }
 
-    createInstances(socket: Socket) {
+    createInstances(
+        socket: Socket,
+        action?: TAction | undefined,
+    ) {
         socket.on('add-object', (data: TAddObject) => {
             let obj: any;
 
@@ -32,19 +36,28 @@ export default class UpdatePartialObject {
             const eventName: string = `update-${data.id}-${data.name}-`;
             Object.keys(obj).forEach((key: string) => {
                 if(typeof obj[key] !== "object") {
-                    this.updateObjectOnSocket(socket, eventName + key, data, key);
+                    this.updateObjectOnSocket(socket, eventName + key, data, key, action);
                 }
             });
         });
     }
 
-    private updateObjectOnSocket(socket: Socket, eventName: string, data: TAddObject, value: string) {
+    private updateObjectOnSocket(socket: Socket, eventName: string, data: TAddObject, key: string, action?: TAction | undefined) {
         socket.on(eventName, (setValue: any) => {
             const currentObj = this.map.get(`${data.id}-${data.name}`);
 
-            if(value in currentObj) {
-                currentObj[value] = setValue;
+            if(key in currentObj) {
+                currentObj[key] = setValue;
                 this.io.emit(eventName, setValue);
+                if(action) {
+                    action({
+                        id: data.id,
+                        name: data.name,
+                        key: key,
+                        value: setValue,
+                        instance: currentObj,
+                    });
+                }
             }
         });
     }
