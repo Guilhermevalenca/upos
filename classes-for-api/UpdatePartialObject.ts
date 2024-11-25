@@ -5,11 +5,15 @@ import CacheSystem from "./CacheSystem";
 
 export default class UpdatePartialObject {
     private io: Server;
-    private map: CacheSystem;
+    private map: CacheSystem | Map<string, any>;
 
-    constructor(io: Server, cacheSystem: CacheSystem) {
+    constructor(io: Server, cacheSystem?: CacheSystem) {
         this.io = io;
-        this.map = cacheSystem;
+        if(cacheSystem) {
+            this.map = cacheSystem;
+        } else {
+            this.map = new Map();
+        }
     }
 
     createInstances(
