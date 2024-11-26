@@ -12,7 +12,7 @@ export default class UpdatePartialObject {
         if(cacheSystem) {
             this.map = cacheSystem;
         } else {
-            this.map = new Map();
+            this.map = new CacheSystem(1000);
         }
     }
 
