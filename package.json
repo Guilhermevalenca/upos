@@ -15,5 +15,11 @@
   "bugs": {
     "url": "https://github.com/Guilhermevalenca/upos/issues"
   },
-  "homepage": "https://github.com/Guilhermevalenca/upos#readme"
+  "homepage": "https://github.com/Guilhermevalenca/upos#readme",
+  "dependencies": {
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  }
 }
