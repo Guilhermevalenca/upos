@@ -4,12 +4,25 @@
 
 - [Introdução](#introdução)
 - [Instalação](#instalação)
-- [Lado do servidor](#servidor)
-- [Lado do cliente](#cliente)
+- [uso Básico](#uso-básico)
+  - [Lado do servidor](#servidor)
+  - [Lado do cliente](#cliente)
+- [Uso Avançado](#uso-avançado)
 
 ## Introdução
 
 ---
+
+Você já tentou atualizar um objeto utilizando socket ? Da muito trabalho não é mesmo ?
+A solução mais otimizada é você atualizar atributo por atributo desse mesmo objeto, mas isso é um inferno, porque perdemos muito tempo escrevendo linhas de codigo repetidas vezes, com o UPOS não haverá mais esse problema!
+
+### Como funciona ?
+
+O UPOS, ele instancia seu objeto criado no lado do cliente no servidor do socket, e como isso funciona ? Basicamente pegamos seu objeto e registramos ele no servidor, agora tanto o cliente quanto o servidor conhecem o mesmo objeto, e com a solução do upos, sempre que você tentar atualizar um atributo desse objeto, apenas o valor atual desse atributo será enviado pela rede.
+E o objeto só será atualizado no lado do cliente, apenas e unicamente quando o receber a atualização do servidor, garantindo assim que todos os clientes sempre tenham o mesmo objeto atualizado.
+
+No UPOS é utilizado um esquema, onde que para instanciar um objeto é necessário passar uma id e um nome para esse objeto e só depois o proprio objeto, garantindo assim uma identificação completa do mesmo, então cada cliente que tiver com o mesmo id e nome, sempre receberá esse objeto, garantindo que não haverá conflitos entre objetos do mesmo tipo, e evitando tbm objetos com a mesma id e de tipos diferentes!
+
 
 ## Instalação
 
@@ -19,9 +32,54 @@
 npm i upos
 ```
 
+# Uso Básico
+
 ## Servidor
 
 ---
+
+Após a instalação do upos, você já terá acesso a biblioteca e a versão indica do socket.io utilizados.
+
+### Apos instalar o upos, instale:
+```shell
+npm i typescript @types/node ts-node
+```
+```shell
+npx tsc --init
+```
+Agora é necessário criar um arquivo chamado main.ts, e escrever:
+
+```typescript
+import { Server, Socket } from 'socket.io';
+import {CacheSystem, UpdatePartialObject} from 'upos/server';
+
+const io = new Server({
+    cors: {
+        origin: '*',
+    },
+});
+
+const cacheSystem = new CacheSystem(1000);
+const updatePartialObject = new UpdatePartialObject(io, cacheSystem);
+
+io.on('connection', (socket: Socket) => {
+    updatePartialObject.createInstances(socket);
+});
+
+io.listen(3000);
+console.log('started!');
+```
+
+Note, que existe um cacheSystem, esse sistema de cache limite o uso de memoria do upos, se você não passar o cacheSystem, o valor default é 1000MB, recomendo que adicione um limite baseado nas suas demandas e/ou capacidades do seu servidor, o upos tem esse limite de memoria, pos os objetos que são registrado, são salvos dentro da memoria, para maximar o desempenho do servidor!
+Caso tente ser registrado um objeto que va ultrapassar o limite de memoria, os objetos mais antigos serão apagados até liberar espaço suficiente para o novo objeto!
+
+e para Executar esse codigo:
+
+```shell
+npx ts-node main.ts
+```
+
+Pronto, agora o lado do servidor já está com a configuração base
 
 ## Cliente
 
@@ -54,6 +112,8 @@ ObjectInSocket.boot({
         user = data;
     })
 ```
+
+Note que ao chamarmos a função boot da class ObjectInSocket, temos que passar uma id e um name, onde esse name sempre será o tipo do objeto, assim você poderá ter varios objetos do mesmo tipo e com id's diferentes, caso algum outro cliente tente registrar um novo objeto com id e name ja registrados no servidor, o servidor apenas enviará os dados mais rescentes desse objeto.
 
 Outros exemplos em:
 - [Vue](#exemplo-em-vue)
@@ -324,3 +384,6 @@ Agora no +page.svelte:
 
 <pre>{JSON.stringify(user)}</pre>
 ```
+
+# Uso Avançado
+
