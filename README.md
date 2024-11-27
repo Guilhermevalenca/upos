@@ -44,6 +44,7 @@ Após a instalação do upos, você já terá acesso a biblioteca e a versão in
 ```shell
 npm i typescript @types/node ts-node
 ```
+### execute:
 ```shell
 npx tsc --init
 ```
