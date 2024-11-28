@@ -7,7 +7,6 @@
 - [uso Básico](#uso-básico)
   - [Lado do servidor](#servidor)
   - [Lado do cliente](#cliente)
-- [Uso Avançado](#uso-avançado)
 
 ## Introdução
 
@@ -82,6 +81,42 @@ npx ts-node main.ts
 
 Pronto, agora o lado do servidor já está com a configuração base
 
+### Para capturar sempre que um objeto for atualizado:
+```typescript
+import { Server, Socket } from 'socket.io';
+import {CacheSystem, UpdatePartialObject } from 'upos/server';
+
+const io = new Server({
+  cors: {
+    origin: '*',
+  },
+});
+
+const cacheSystem = new CacheSystem(1000);
+const updatePartialObject = new UpdatePartialObject(io, cacheSystem);
+
+io.on('connection', (socket: Socket) => {
+  updatePartialObject.createInstances(socket, (data) => {
+    console.log(data);
+  });
+});
+
+io.listen(3000);
+console.log('started!');
+```
+
+Atributos retornados no parametro data:
+
+```
+{
+    id: number, 
+    name: string, 
+    key: string, 
+    value: any, 
+    instance: any
+}
+```
+
 ## Cliente
 
 ---
@@ -115,6 +150,51 @@ ObjectInSocket.boot({
 ```
 
 Note que ao chamarmos a função boot da class ObjectInSocket, temos que passar uma id e um name, onde esse name sempre será o tipo do objeto, assim você poderá ter varios objetos do mesmo tipo e com id's diferentes, caso algum outro cliente tente registrar um novo objeto com id e name ja registrados no servidor, o servidor apenas enviará os dados mais rescentes desse objeto.
+
+Também a possibilidade de executar uma ação quando o objeto for atualizado, e também quando você tentar atualizar o objeto, atraves dos metodos get e set, dessa forma:
+```typescript
+import {SocketInstance, ObjectInSocket} from 'upos/client';
+
+const url = '';
+//Conecta-se ao servidor do socket
+SocketInstance.createSocketInstance(url);
+
+let user: any = {
+    name: '',
+    email: '',
+}
+//Instancia seu objeto no lado do servidor
+ObjectInSocket.boot({
+    id: 1,
+    name: 'user',
+    instance: user,
+}, {
+    //Sempre que o objeto for atualizado, você poderá realizar alguma ação
+  get(data) {
+      console.log(data);
+  },
+  //Sempre que você tentar da um set nos atributos do objeto esse ação será executada
+  set(data) {
+      console.log(data);
+  }
+})
+    //captura o novo objeto
+    .then((data) => {
+        //Agora seu objeto será atualizado apenas pelo servidor
+        user = data;
+    })
+```
+
+Os atributos retornados pelo metodo get e set, tem esses atributos:
+```
+{
+  id: number,
+  name: string,
+  key: string,
+  value: any,
+  instance: T,
+}
+```
 
 Outros exemplos em:
 - [Vue](#exemplo-em-vue)
@@ -385,6 +465,4 @@ Agora no +page.svelte:
 
 <pre>{JSON.stringify(user)}</pre>
 ```
-
-# Uso Avançado
 
