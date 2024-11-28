@@ -10,8 +10,6 @@
 
 ## Introdução
 
----
-
 Você já tentou atualizar um objeto utilizando socket ? Da muito trabalho não é mesmo ?
 A solução mais otimizada é você atualizar atributo por atributo desse mesmo objeto, mas isso é um inferno, porque perdemos muito tempo escrevendo linhas de codigo repetidas vezes, com o UPOS não haverá mais esse problema!
 
@@ -25,8 +23,6 @@ No UPOS é utilizado um esquema, onde que para instanciar um objeto é necessár
 
 ## Instalação
 
----
-
 ```shell
 npm i upos
 ```
@@ -34,8 +30,6 @@ npm i upos
 # Uso Básico
 
 ## Servidor
-
----
 
 Após a instalação do upos, você já terá acesso a biblioteca e a versão indica do socket.io utilizados.
 
@@ -118,8 +112,6 @@ Atributos retornados no parametro data:
 ```
 
 ## Cliente
-
----
 
 ### Instanciando objeto
 
