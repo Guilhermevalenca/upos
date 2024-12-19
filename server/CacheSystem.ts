@@ -15,6 +15,7 @@ export default class CacheSystem {
     }
 
     set(key: string, value: object) {
+        //@ts-ignore
         value['last_update_at'] = new Date();
 
         const valueSize = this.estimateSize(value);

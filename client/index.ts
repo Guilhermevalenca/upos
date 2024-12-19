@@ -1,12 +1,14 @@
-import SocketInstance from "./SocketInstance";
-import ObjectInSocket from "./ObjectInSocket";
-import type TAction from "./types/TAction";
+import SetObject from './SetObject';
+import Socket from './Socket';
+import type TAction from './types/TAction';
+import type TDataBoot from "./types/TDataBoot";
 
 export {
-    SocketInstance,
-    ObjectInSocket,
+    SetObject,
+    Socket,
 }
 
 export type {
-    TAction
-};
+    TAction,
+    TDataBoot,
+}

@@ -44,24 +44,15 @@ npx tsc --init
 Agora é necessário criar um arquivo chamado main.ts, e escrever:
 
 ```typescript
-import { Server, Socket } from 'socket.io';
-import {CacheSystem, UpdatePartialObject} from 'upos/server';
+import Server from 'upos/server';
 
-const io = new Server({
-    cors: {
-        origin: '*',
-    },
+const serve = new Server();
+
+serve.boot({
+  port: 3000,
+}, () => {
+  console.log('started server');
 });
-
-const cacheSystem = new CacheSystem(1000);
-const updatePartialObject = new UpdatePartialObject(io, cacheSystem);
-
-io.on('connection', (socket: Socket) => {
-    updatePartialObject.createInstances(socket);
-});
-
-io.listen(3000);
-console.log('started!');
 ```
 
 Note, que existe um cacheSystem, esse sistema de cache limite o uso de memoria do upos, se você não passar o cacheSystem, o valor default é 1000MB, recomendo que adicione um limite baseado nas suas demandas e/ou capacidades do seu servidor, o upos tem esse limite de memoria, pos os objetos que são registrado, são salvos dentro da memoria, para maximar o desempenho do servidor!
@@ -77,26 +68,18 @@ Pronto, agora o lado do servidor já está com a configuração base
 
 ### Para capturar sempre que um objeto for atualizado:
 ```typescript
-import { Server, Socket } from 'socket.io';
-import {CacheSystem, UpdatePartialObject } from 'upos/server';
+import Server from 'upos/server';
 
-const io = new Server({
-  cors: {
-    origin: '*',
-  },
+const serve = new Server(1000, (data) => {
+  console.log(data);
 });
 
-const cacheSystem = new CacheSystem(1000);
-const updatePartialObject = new UpdatePartialObject(io, cacheSystem);
-
-io.on('connection', (socket: Socket) => {
-  updatePartialObject.createInstances(socket, (data) => {
-    console.log(data);
-  });
+serve.boot({
+  port: 3000,
+}, () => {
+  console.log('started server');
 });
 
-io.listen(3000);
-console.log('started!');
 ```
 
 Atributos retornados no parametro data:
@@ -104,7 +87,7 @@ Atributos retornados no parametro data:
 ```
 {
     id: number, 
-    name: string, 
+    typeName: string, 
     key: string, 
     value: any, 
     instance: any
@@ -118,18 +101,17 @@ Atributos retornados no parametro data:
 Exemplo em typeScript
 
 ```typescript
-import {SocketInstance, ObjectInSocket} from 'upos/client';
+import {Socket, SetObject} from 'upos/client';
 
 const url = '';
-//Conecta-se ao servidor do socket
-SocketInstance.createSocketInstance(url);
+Socket.connection(url); //default: 'ws://localhost'
 
 let user: any = {
     name: '',
     email: '',
 }
 //Instancia seu objeto no lado do servidor
-ObjectInSocket.boot({
+SetObject.boot({
     id: 1,
     name: 'user',
     instance: user,
@@ -145,18 +127,17 @@ Note que ao chamarmos a função boot da class ObjectInSocket, temos que passar 
 
 Também a possibilidade de executar uma ação quando o objeto for atualizado, e também quando você tentar atualizar o objeto, atraves dos metodos get e set, dessa forma:
 ```typescript
-import {SocketInstance, ObjectInSocket} from 'upos/client';
+import {Socket, SetObject} from 'upos/client';
 
 const url = '';
-//Conecta-se ao servidor do socket
-SocketInstance.createSocketInstance(url);
+Socket.connection(url); //default: 'ws://localhost'
 
 let user: any = {
     name: '',
     email: '',
 }
 //Instancia seu objeto no lado do servidor
-ObjectInSocket.boot({
+SetObject.boot({
     id: 1,
     name: 'user',
     instance: user,
@@ -181,7 +162,7 @@ Os atributos retornados pelo metodo get e set, tem esses atributos:
 ```
 {
   id: number,
-  name: string,
+  typeName: string,
   key: string,
   value: any,
   instance: T,
@@ -201,56 +182,14 @@ Primeiro No arquivo main.js ou main.ts Conecte o cliente ao servidor
 Forma simples:
 
 ```typescript
-import './assets/main.css';
+import { createApp } from 'vue'
+import './style.css'
+import App from './App.vue'
+import Socket from "./upos/client/Socket.ts";
 
-import { createApp } from 'vue';
-import { createPinia } from 'pinia';
+Socket.connection('ws://localhost:3000');
 
-import App from './App.vue';
-import router from './router';
-import type { Socket } from 'socket.io-client';
-import { SocketInstance } from 'upos/client';
-
-const app = createApp(App);
-
-const url = '';
-//Conectando ao servidor do socket
-SocketInstance.createSocketInstance(url);
-
-app.use(createPinia());
-app.use(router);
-
-app.mount('#app');
-```
-Capturando a instancia da conexão com o servidor:
-```typescript
-import './assets/main.css';
-
-import { createApp } from 'vue';
-import { createPinia } from 'pinia';
-
-import App from './App.vue';
-import router from './router';
-import type { Socket } from 'socket.io-client';
-import { SocketInstance } from 'upos/client';
-
-declare module '@vue/runtime-core' {
-    interface ComponentCustomProperties {
-        $socket: Socket;
-    }
-}
-
-const app = createApp(App);
-
-const url = '';
-//Conectando ao servidor do socket
-app.config.globalProperties.$socket = SocketInstance.createSocketInstance(url);
-
-
-app.use(createPinia());
-app.use(router);
-
-app.mount('#app');
+createApp(App).mount('#app')
 ```
 
 Para instanciar um Objeto utilizando OPTIONS API
@@ -261,7 +200,7 @@ Para instanciar um Objeto utilizando OPTIONS API
 </template>
 
 <script lang="ts">
-  import {ObjectInSocket} from 'upos/client';
+  import {SetObject} from 'upos/client';
 
   export default {
     name: 'HomeView',
@@ -276,7 +215,7 @@ Para instanciar um Objeto utilizando OPTIONS API
     },
 
     mounted() {
-      ObjectInSocket.boot({
+      SetObject.boot({
         id: 1,
         name: 'user',
         instance: this.user
@@ -297,7 +236,7 @@ Para Instanciar um Objeto utilizando COMPOSITION API
 </template>
 
 <script lang="ts" setup>
-import {ObjectInSocket} from 'upos/client';
+import {SetObject} from 'upos/client';
 import { onMounted, ref } from 'vue'
 
 const user = ref({
@@ -306,7 +245,7 @@ const user = ref({
 });
 
 onMounted(async () => {
-  await ObjectInSocket.boot({
+  await SetObject.boot({
     id: 1,
     name: 'user',
     instance: user.value
@@ -328,10 +267,10 @@ Primeiro conecte-se ao servidor do socket, abrindo o arquivo main.jsx ou main.ts
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import {SocketInstance} from "upos/client";
+import {Socket} from "upos/client";
 
 const url = '';
-SocketInstance.createSocketInstance(url);
+Socket.connection(url); //default: 'ws://localhost'
 
 createRoot(document.getElementById('root')!).render(
     <App />,
@@ -343,7 +282,7 @@ Agora em qualquer component:
 ```tsx
 import {useEffect, useState} from 'react';
 import './App.css';
-import {ObjectInSocket} from "upos/client";
+import {SetObject} from "upos/client";
 
 function App() {
     const [user, setUser] = useState({
@@ -351,7 +290,7 @@ function App() {
         email: '',
     });
     useEffect(() => {
-        ObjectInSocket.boot({
+        SetObject.boot({
             id: 1,
             name: 'user',
             instance: user
@@ -380,10 +319,10 @@ Primeiro vá no arquivo main.ts:
 import { bootstrapApplication } from '@angular/platform-browser';
 import { appConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';
-import { SocketInstance } from 'upos/client';
+import { Socket } from 'upos/client';
 
 const url = '';
-SocketInstance.createSocketInstance(url);
+Socket.connection(url); //default: 'ws://localhost'
 
 bootstrapApplication(AppComponent, appConfig)
   .catch((err) => console.error(err));
@@ -391,9 +330,9 @@ bootstrapApplication(AppComponent, appConfig)
 Agora em qualquer component:
 
 ```typescript
-import {Component, OnInit} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import {ObjectInSocket} from 'upos/client';
+import { SetObject } from 'upos/client';
 
 @Component({
   selector: 'app-root',
@@ -408,7 +347,7 @@ export class AppComponent implements OnInit {
   };
 
   ngOnInit() {
-    ObjectInSocket.boot({
+    SetObject.boot({
       id: 1,
       name: 'user',
       instance: this.user,
@@ -432,8 +371,8 @@ Agora no +page.svelte:
 
 ```sveltehtml
 <script lang="ts">
-    import {onMount} from "svelte";
-    import {ObjectInSocket, SocketInstance} from 'upos/client';
+    import { onMount } from "svelte";
+    import { Socket, SetObject } from 'upos/client';
 
     let user = $state({
         name: '',
@@ -443,8 +382,8 @@ Agora no +page.svelte:
 
     onMount(async () => {
         const url = '';
-        SocketInstance.createSocketInstance(url);
-        await ObjectInSocket.boot({
+        Socket.connection(url); //default: 'ws://localhost'
+        await SetObject.boot({
             id: 1,
             name: 'user',
             instance: user,

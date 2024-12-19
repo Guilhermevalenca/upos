@@ -1,14 +1,8 @@
-import UpdatePartialObject from "./UpdatePartialObject";
-import CacheSystem from "./CacheSystem";
-import type TAction from "./types/TAction";
-import type TAddObject from "./types/TAddObject";
+import Server from './Server';
+import TUpdatedData from './types/TUpdatedData';
 
-export {
-    UpdatePartialObject,
-    CacheSystem,
-}
+export default Server;
 
 export type {
-    TAction,
-    TAddObject
+    TUpdatedData,
 }
