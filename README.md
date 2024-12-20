@@ -18,7 +18,7 @@ A solução mais otimizada é você atualizar atributo por atributo desse mesmo 
 O UPOS, ele instancia seu objeto criado no lado do cliente no servidor do socket, e como isso funciona ? Basicamente pegamos seu objeto e registramos ele no servidor, agora tanto o cliente quanto o servidor conhecem o mesmo objeto, e com a solução do upos, sempre que você tentar atualizar um atributo desse objeto, apenas o valor atual desse atributo será enviado pela rede.
 E o objeto só será atualizado no lado do cliente, apenas e unicamente quando o receber a atualização do servidor, garantindo assim que todos os clientes sempre tenham o mesmo objeto atualizado.
 
-No UPOS é utilizado um esquema, onde que para instanciar um objeto é necessário passar uma id e um nome para esse objeto e só depois o proprio objeto, garantindo assim uma identificação completa do mesmo, então cada cliente que tiver com o mesmo id e nome, sempre receberá esse objeto, garantindo que não haverá conflitos entre objetos do mesmo tipo, e evitando tbm objetos com a mesma id e de tipos diferentes!
+No UPOS é utilizado um esquema, onde que para instanciar um objeto é necessário passar uma id e um tipo para esse objeto e só depois o proprio objeto, garantindo assim uma identificação completa do mesmo, então cada cliente que tiver com o mesmo id e tipo, sempre receberá esse objeto, garantindo que não haverá conflitos entre objetos do mesmo tipo, e evitando tbm objetos com a mesma id e de tipos diferentes!
 
 
 ## Instalação
