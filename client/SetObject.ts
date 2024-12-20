@@ -1,6 +1,6 @@
-import TDataBoot from "./types/TDataBoot";
-import TAction from "./types/TAction";
-import Socket from "./Socket";
+import type TDataBoot from "./types/TDataBoot.ts";
+import type TAction from "./types/TAction.ts";
+import Socket from "./Socket.ts";
 
 export default class SetObject extends Socket {
     static async boot<T extends object>(
@@ -41,7 +41,7 @@ export default class SetObject extends Socket {
                 //@ts-ignore
                 Object.assign(data.instance, obj.setObject);
             } else if('key' in obj && 'value' in obj) {
-                if(String(obj.key) in data.instance) {
+                if(String(obj.key) in data.instance || Array.isArray(data.instance)) {
                     //@ts-ignore
                     data.instance[String(obj.key)] = obj.value;
 

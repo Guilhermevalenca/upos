@@ -1,14 +1,15 @@
-import SetObject from './SetObject';
-import Socket from './Socket';
-import type TAction from './types/TAction';
-import type TDataBoot from "./types/TDataBoot";
+import SetObject from './SetObject.ts';
+import Socket from './Socket.ts';
 
 export {
-    SetObject,
-    Socket,
+  SetObject,
+  Socket,
 }
 
+import type TAction from './types/TAction.ts';
+import type TDataBoot from './types/TDataBoot.ts';
+
 export type {
-    TAction,
-    TDataBoot,
+  TAction,
+  TDataBoot,
 }

@@ -1,5 +1,6 @@
-import type TDataBoot from "./TDataBoot";
+import type TDataBoot from "./TDataBoot.ts";
 
+//@ts-ignore
 type TActionDefault<T> = TDataBoot<T> & {
     key: string;
     value: any;
@@ -7,4 +8,5 @@ type TActionDefault<T> = TDataBoot<T> & {
 
 type TAction<T> = (data: TActionDefault<T>) => void | Promise<void>;
 
+//@ts-ignore
 export default TAction;
