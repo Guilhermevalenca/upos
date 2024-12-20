@@ -70,7 +70,11 @@ Pronto, agora o lado do servidor já está com a configuração base
 ```typescript
 import Server from 'upos/server';
 
-// 1000 é o limite de memoria que será utilizado, e data é o objeto retornado sempre que um objeto for atualizado para todos os clientes
+//1000 é o limite de memoria que será utilizado. 
+/*
+   Data é o objeto retornado sempre que um objeto for atualizado 
+   para todos os clientes
+*/
 const serve = new Server(1000, (data) => {
   console.log(data);
 });
