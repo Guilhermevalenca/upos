@@ -35,7 +35,7 @@ Após a instalação do upos, você já terá acesso a biblioteca e a versão in
 
 ### Apos instalar o upos, instale:
 ```shell
-npm i typescript @types/node ts-node
+npm i typescript @types/node ts-node -D
 ```
 ### execute:
 ```shell
@@ -101,7 +101,7 @@ Atributos retornados no parametro data:
 Exemplo em typeScript
 
 ```typescript
-import {Socket, SetObject} from 'upos/client';
+import { Socket, SetObject } from 'upos/client';
 
 const url = '';
 Socket.connection(url); //default: 'ws://localhost'
@@ -127,7 +127,7 @@ Note que ao chamarmos a função boot da class ObjectInSocket, temos que passar 
 
 Também a possibilidade de executar uma ação quando o objeto for atualizado, e também quando você tentar atualizar o objeto, atraves dos metodos get e set, dessa forma:
 ```typescript
-import {Socket, SetObject} from 'upos/client';
+import { Socket, SetObject } from 'upos/client';
 
 const url = '';
 Socket.connection(url); //default: 'ws://localhost'
@@ -185,7 +185,7 @@ Forma simples:
 import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'
-import Socket from "./upos/client/Socket.ts";
+import { Socket } from 'upos/client';
 
 Socket.connection('ws://localhost:3000');
 
@@ -200,7 +200,7 @@ Para instanciar um Objeto utilizando OPTIONS API
 </template>
 
 <script lang="ts">
-  import {SetObject} from 'upos/client';
+  import { SetObject } from 'upos/client';
 
   export default {
     name: 'HomeView',
@@ -236,7 +236,7 @@ Para Instanciar um Objeto utilizando COMPOSITION API
 </template>
 
 <script lang="ts" setup>
-import {SetObject} from 'upos/client';
+import { SetObject } from 'upos/client';
 import { onMounted, ref } from 'vue'
 
 const user = ref({
@@ -267,7 +267,7 @@ Primeiro conecte-se ao servidor do socket, abrindo o arquivo main.jsx ou main.ts
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import {Socket} from "upos/client";
+import { Socket } from "upos/client";
 
 const url = '';
 Socket.connection(url); //default: 'ws://localhost'
@@ -280,9 +280,9 @@ createRoot(document.getElementById('root')!).render(
 Agora em qualquer component:
 
 ```tsx
-import {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
-import {SetObject} from "upos/client";
+import { SetObject } from 'upos/client';
 
 function App() {
     const [user, setUser] = useState({
