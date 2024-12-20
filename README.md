@@ -10,43 +10,43 @@
 
 ## Introdução
 
-Você já tentou atualizar um objeto utilizando socket ? Da muito trabalho não é mesmo ?
-A solução mais otimizada é você atualizar atributo por atributo desse mesmo objeto, mas isso é um inferno, porque perdemos muito tempo escrevendo linhas de codigo repetidas vezes, com o UPOS não haverá mais esse problema!
+Você já tentou atualizar um objeto utilizando socket? Da muito trabalho não é mesmo?
+A solução mais otimizada é você atualizar atributo por atributo desse mesmo objeto, mas isso é um inferno, porque perdemos muito tempo escrevendo linhas de código repetidas vezes, com o `UPOS` não haverá mais esse problema!
 
 ### Como funciona ?
 
-O UPOS, ele instancia seu objeto criado no lado do cliente no servidor do socket, e como isso funciona ? Basicamente pegamos seu objeto e registramos ele no servidor, agora tanto o cliente quanto o servidor conhecem o mesmo objeto, e com a solução do upos, sempre que você tentar atualizar um atributo desse objeto, apenas o valor atual desse atributo será enviado pela rede.
+O `UPOS`, ele instancia seu objeto criado no lado do cliente no servidor do socket, e como isso funciona? Basicamente pegamos seu objeto e registramos ele no servidor, agora tanto o cliente quanto o servidor conhecem o mesmo objeto, e com a solução do `UPOS`, sempre que você tentar atualizar um atributo desse objeto, apenas o valor atual desse atributo será enviado pela rede.
 E o objeto só será atualizado no lado do cliente, apenas e unicamente quando o receber a atualização do servidor, garantindo assim que todos os clientes sempre tenham o mesmo objeto atualizado.
 
-No UPOS é utilizado um esquema, onde que para instanciar um objeto é necessário passar uma id e um tipo para esse objeto e só depois o proprio objeto, garantindo assim uma identificação completa do mesmo, então cada cliente que tiver com o mesmo id e tipo, sempre receberá esse objeto, garantindo que não haverá conflitos entre objetos do mesmo tipo, e evitando tbm objetos com a mesma id e de tipos diferentes!
+No `UPOS` é utilizado um esquema, onde que para instanciar um objeto é necessário passar uma `id` e um `tipo` para esse objeto e só depois o próprio objeto, garantindo assim uma identificação completa do mesmo, então cada cliente que tiver com o mesmo `id` e `tipo`, sempre receberá esse objeto, garantindo que não haverá conflitos entre objetos do mesmo `tipo`, e evitando tbm objetos com a mesma `id` e de `tipos` diferentes!
 
 
 ## Instalação
 
 ```shell
-npm i upos
+  npm i upos
 ```
 
 # Uso Básico
 
 ## Servidor
 
-Após a instalação do upos, você já terá acesso a biblioteca e a versão indica do socket.io utilizados.
+Após a instalação do `UPOS`, você já terá acesso a biblioteca e a versão indica do `ws` utilizado.
 
 ### Apos instalar o upos, instale:
 ```shell
-npm i typescript @types/node ts-node -D
+  npm i typescript @types/node ts-node -D
 ```
 ### execute:
 ```shell
-npx tsc --init
+  npx tsc --init
 ```
-Agora é necessário criar um arquivo chamado main.ts, e escrever:
+Agora é necessário criar um arquivo chamado `main.ts`, e escrever:
 
 ```typescript
 import Server from 'upos/server';
 
-const serve = new Server();
+const serve = new Server(1000); //default: 1000
 
 serve.boot({
   port: 3000,
@@ -55,13 +55,13 @@ serve.boot({
 });
 ```
 
-Note, que existe um cacheSystem, esse sistema de cache limite o uso de memoria do upos, se você não passar o cacheSystem, o valor default é 1000MB, recomendo que adicione um limite baseado nas suas demandas e/ou capacidades do seu servidor, o upos tem esse limite de memoria, pos os objetos que são registrado, são salvos dentro da memoria, para maximar o desempenho do servidor!
-Caso tente ser registrado um objeto que va ultrapassar o limite de memoria, os objetos mais antigos serão apagados até liberar espaço suficiente para o novo objeto!
+Obs.: existe um cacheSystem, esse sistema de cache limite o uso de memória do `UPOS`, se você não passar o limite, o valor default é 1000MB, recomendo que adicione um limite baseado nas suas demandas e/ou capacidades do seu servidor, o `UPOS` tem esse limite de memória, pos os objetos que serão registrado, são salvos dentro da memória, para maximar o desempenho do servidor!
+Caso tente ser registrado um objeto que va ultrapassar o limite de memória, os objetos mais antigos serão apagados até liberar espaço suficiente para o novo objeto!
 
-e para Executar esse codigo:
+e para Executar esse código:
 
 ```shell
-npx ts-node main.ts
+  npx ts-node main.ts
 ```
 
 Pronto, agora o lado do servidor já está com a configuração base
@@ -70,10 +70,10 @@ Pronto, agora o lado do servidor já está com a configuração base
 ```typescript
 import Server from 'upos/server';
 
-//1000 é o limite de memoria que será utilizado. 
+//1000 é o limite de memória que será utilizado. 
 /*
    Data é o objeto retornado sempre que um objeto for atualizado 
-   para todos os clientes
+   para todos os clientes.
 */
 const serve = new Server(1000, (data) => {
   console.log(data);
@@ -87,7 +87,7 @@ serve.boot({
 
 ```
 
-Atributos retornados no parametro data:
+Atributos retornados no parâmetro data:
 
 ```
 {
@@ -118,7 +118,7 @@ let user: any = {
 //Instancia seu objeto no lado do servidor
 SetObject.boot({
     id: 1,
-    name: 'user',
+    typeName: 'user',
     instance: user,
 })
     //captura o novo objeto
@@ -128,9 +128,9 @@ SetObject.boot({
     })
 ```
 
-Note que ao chamarmos a função boot da class ObjectInSocket, temos que passar uma id e um name, onde esse name sempre será o tipo do objeto, assim você poderá ter varios objetos do mesmo tipo e com id's diferentes, caso algum outro cliente tente registrar um novo objeto com id e name ja registrados no servidor, o servidor apenas enviará os dados mais rescentes desse objeto.
+Note que ao chamarmos a função boot da class SetObject, temos que passar uma `id` e um `typeName`, onde esse typeName sempre será o tipo do objeto, assim você poderá ter vários objetos do mesmo tipo e com id's diferentes, caso algum outro cliente tente registrar um novo objeto com id e typeName já registrados no servidor, o servidor apenas enviará os dados mais recentes desse objeto.
 
-Também a possibilidade de executar uma ação quando o objeto for atualizado, e também quando você tentar atualizar o objeto, atraves dos metodos get e set, dessa forma:
+Também a possibilidade de executar uma ação quando o objeto for atualizado, e também quando você tentar atualizar o objeto, através dos métodos get e set, dessa forma:
 ```typescript
 import { Socket, SetObject } from 'upos/client';
 
@@ -144,7 +144,7 @@ let user: any = {
 //Instancia seu objeto no lado do servidor
 SetObject.boot({
     id: 1,
-    name: 'user',
+    typeName: 'user',
     instance: user,
 }, {
     //Sempre que o objeto for atualizado, você poderá realizar alguma ação
@@ -163,7 +163,7 @@ SetObject.boot({
     })
 ```
 
-Os atributos retornados pelo metodo get e set, tem esses atributos:
+Os atributos retornados pelo método get e set, tem esses atributos:
 ```
 {
   id: number,
@@ -222,7 +222,7 @@ Para instanciar um Objeto utilizando OPTIONS API
     mounted() {
       SetObject.boot({
         id: 1,
-        name: 'user',
+        typeName: 'user',
         instance: this.user
       })
           .then(data => {
@@ -252,7 +252,7 @@ const user = ref({
 onMounted(async () => {
   await SetObject.boot({
     id: 1,
-    name: 'user',
+    typeName: 'user',
     instance: user.value
   })
     .then(data => {
@@ -297,7 +297,7 @@ function App() {
     useEffect(() => {
         SetObject.boot({
             id: 1,
-            name: 'user',
+            typeName: 'user',
             instance: user
         })
             .then(data => {
@@ -354,7 +354,7 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     SetObject.boot({
       id: 1,
-      name: 'user',
+      typeName: 'user',
       instance: this.user,
     })
       .then((data) => {
@@ -367,7 +367,7 @@ export class AppComponent implements OnInit {
 
 #### Exemplo em SvelteKit
 
-Primeiro passo, desativar o ssr da rota que será utlizado o component, dessa forma no arquivo +page.server.ts:
+Primeiro passo, desativar o ssr da rota que será utilizado o component, dessa forma no arquivo +page.server.ts:
 ```typescript
 export const ssr = false;
 ```
@@ -390,7 +390,7 @@ Agora no +page.svelte:
         Socket.connection(url); //default: 'ws://localhost'
         await SetObject.boot({
             id: 1,
-            name: 'user',
+            typeName: 'user',
             instance: user,
         })
             .then(data => {
