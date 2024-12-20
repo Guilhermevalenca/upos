@@ -1,6 +1,6 @@
 {
   "name": "upos",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "update partial object in socket",
   "main": "index.ts",
   "scripts": {
