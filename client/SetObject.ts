@@ -1,6 +1,7 @@
 import type TDataBoot from "./types/TDataBoot.ts";
 import type TAction from "./types/TAction.ts";
 import Socket from "./Socket.ts";
+import DataTransferService from '@/upos/client/DataTransferService.ts'
 
 export default class SetObject extends Socket {
     static async boot<T extends object>(
@@ -12,19 +13,15 @@ export default class SetObject extends Socket {
     ) {
         const ws: WebSocket = this.create(data.id + '-' + (data.typeName ?? typeof data.instance));
 
-        ws.onerror = (error) => {
-            console.error('WebSocket error:', error);
-        };
-
         await this.send_object_for_to_server(data, ws, action?.get);
 
         ws.onopen = () => {
-            ws.send(JSON.stringify({
-                data: {
-                    instance: data.instance,
-                },
-                add_object: true,
-            }));
+          DataTransferService.emit(ws, {
+            data: {
+              instance: data.instance,
+            },
+            add_object: true,
+          });
         }
 
         return this.createProxy(data, ws, action?.set);
@@ -35,26 +32,25 @@ export default class SetObject extends Socket {
         ws: WebSocket,
         get?: TAction<T>
     ) {
-        ws.onmessage = (event) => {
-            const obj = JSON.parse(event.data);
-            if('setObject' in obj) {
-                //@ts-ignore
-                Object.assign(data.instance, obj.setObject);
-            } else if('key' in obj && 'value' in obj) {
-                if(String(obj.key) in data.instance || Array.isArray(data.instance)) {
-                    //@ts-ignore
-                    data.instance[String(obj.key)] = obj.value;
+        DataTransferService.on(ws,(obj) => {
+          if('setObject' in obj) {
+            //@ts-ignore
+            Object.assign(data.instance, obj.setObject);
+          } else if('key' in obj && 'value' in obj) {
+            if(String(obj.key) in data.instance || Array.isArray(data.instance)) {
+              //@ts-ignore
+              data.instance[String(obj.key)] = obj.value;
 
-                    if(get) {
-                        get({
-                            ...data,
-                            key: obj.key,
-                            value: obj.value,
-                        });
-                    }
-                }
+              if(get) {
+                get({
+                  ...data,
+                  key: obj.key,
+                  value: obj.value,
+                });
+              }
             }
-        };
+          }
+        });
     }
 
     private static async createProxy<T extends object>(
@@ -64,10 +60,10 @@ export default class SetObject extends Socket {
     ) {
         return new Proxy(data.instance, {
             set(_, key, value) {
-                ws.send(JSON.stringify({
-                    key: String(key),
-                    value,
-                }));
+                DataTransferService.emit(ws, {
+                  key: String(key),
+                  value,
+                });
 
                 if(set) {
                     set({

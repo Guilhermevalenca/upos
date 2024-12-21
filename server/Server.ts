@@ -2,13 +2,14 @@ import WebSocket, {type ServerOptions, WebSocketServer} from 'ws';
 import {type IncomingMessage} from 'node:http';
 import CacheSystem from "./CacheSystem";
 import type TUpdatedData from "./types/TUpdatedData";
+import DataTransferService from "./DataTransferService";
 
 export default class Server {
     private _cacheSystem: CacheSystem;
 
     constructor(
         memoryLimit: number = 1000,
-        private readonly update?: (data: TUpdatedData) => void
+        private readonly update?: (data: TUpdatedData) => void | Promise<void>,
     ) {
         this._cacheSystem = new CacheSystem(memoryLimit);
     }
@@ -17,63 +18,80 @@ export default class Server {
         options?: ServerOptions<typeof WebSocket.WebSocket, typeof IncomingMessage>,
         callback?: () => void
     ): WebSocket.Server<typeof WebSocket, typeof IncomingMessage> {
-        const wss = new WebSocketServer(options, callback);
+        const webSocketServer = new WebSocketServer(options, callback);
 
-        wss.on('connection', (ws: WebSocket) => {
-            ws.on('error', console.error);
-
-            ws.on('message', (data: string) => {
-                const translateData = JSON.parse(data);
-
-                if('add_object' in translateData) {
-                    delete translateData.add_object;
-                    this.createInstance(translateData, ws);
-                } else if('key' in translateData && 'value' in translateData) {
-
-                    const instance = this._cacheSystem.get(ws.protocol);
-                    instance[translateData.key] = translateData.value;
-
-                    if(this.update) {
-                        const [id, typeName] = ws.protocol.split('-');
-                        this.update({
-                            ...translateData,
-                            instance,
-                            id,
-                            typeName,
-                        });
-                    }
-
-                    wss.clients.forEach((client) => {
-                        if(client.protocol === ws.protocol) {
-                            client.send(JSON.stringify({
-                                key: translateData.key,
-                                value: translateData.value,
-                            }));
-                        }
-                    });
-                }
-            });
+        webSocketServer.on('connection', (ws: WebSocket) => {
+            this.onMessage(webSocketServer, ws);
         });
-        return wss;
+
+        return webSocketServer;
     }
 
-    private createInstance(value: object, ws: WebSocket) {
-        if('data' in value) {
-            const data: any = value.data;
+    private onMessage(
+        webSocketServer:  WebSocket.Server<typeof WebSocket, typeof IncomingMessage>,
+        ws: WebSocket,
+    ) {
+        DataTransferService.on(ws, (data: any) => {
 
-            if(!this._cacheSystem.has(ws.protocol)) {
-                this._cacheSystem.set(ws.protocol, data?.instance);
-            } else {
-                console.log('testando');
-                const obj = this._cacheSystem.get(ws.protocol);
-                console.log(obj);
-                ws.send(JSON.stringify({
-                    setObject: {
-                        ...obj,
-                        last_update_at: undefined,
-                    }
-                }));
+            if('add_object' in data && 'data' in data) {
+                delete data.add_object;
+                this.createInstance(ws, data);
+
+            } else if('key' in data && 'value' in data) {
+                const instance = this._cacheSystem.get(ws.protocol);
+                instance[data.key] = data.value;
+
+                if(this.update) {
+                    const [id, typeName] = ws.protocol.split('-');
+                    this.update({
+                        ...data,
+                        instance,
+                        id,
+                        typeName,
+                    });
+                }
+                this.sendAllClient(webSocketServer, ws, data);
             }
+        });
+    }
+
+    private createInstance(
+        ws: WebSocket,
+        value: {
+            data: {
+                instance: any,
+            }
+        },
+    ) {
+        if(!this._cacheSystem.has(ws.protocol)) {
+            this._cacheSystem.set(ws.protocol, value.data?.instance);
+        } else {
+            const obj = this._cacheSystem.get(ws.protocol);
+
+            DataTransferService.emit(ws, {
+                setObject: {
+                    ...obj,
+                    last_update_at: undefined,
+                }
+            });
         }
+    }
+
+    private sendAllClient(
+        webSocketServer:  WebSocket.Server<typeof WebSocket, typeof IncomingMessage>,
+        ws: WebSocket,
+        data: {
+            key: string,
+            value: any,
+        },
+    ) {
+        webSocketServer.clients.forEach((client) => {
+            if(client.protocol === ws.protocol) {
+                DataTransferService.emit(ws, {
+                    key: data.key,
+                    value: data.value,
+                });
+            }
+        });
     }
 }

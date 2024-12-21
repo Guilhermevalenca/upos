@@ -6,6 +6,12 @@ export default class Socket {
     }
 
     protected static create(protocol: string) {
-        return new WebSocket(Socket._url, protocol);
+        const ws = new WebSocket(this._url, protocol);
+
+        ws.onerror = (error) => {
+          console.log('WebSocket error:', error);
+        };
+
+        return ws;
     }
 }
