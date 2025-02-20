@@ -87,7 +87,7 @@ export default class Server {
     ) {
         webSocketServer.clients.forEach((client) => {
             if(client.protocol === ws.protocol) {
-                DataTransferService.emit(ws, {
+                DataTransferService.emit(client, {
                     key: data.key,
                     value: data.value,
                 });

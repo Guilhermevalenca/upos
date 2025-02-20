@@ -1,7 +1,7 @@
 import type TDataBoot from "./types/TDataBoot.ts";
 import type TAction from "./types/TAction.ts";
 import Socket from "./Socket.ts";
-import DataTransferService from '@/upos/client/DataTransferService.ts'
+import DataTransferService from './DataTransferService.ts';
 
 export default class SetObject extends Socket {
     static async boot<T extends object>(
@@ -58,19 +58,30 @@ export default class SetObject extends Socket {
         ws: WebSocket,
         set?: TAction<T>
     ) {
+        const debounced = this.debounce((key: string, value: any) => {
+            DataTransferService.emit(ws, {
+                key,
+                value,
+            });
+            console.log('key', String(key), 'value', value);
+        }, 1000);
+
         return new Proxy(data.instance, {
             set(_, key, value) {
-                DataTransferService.emit(ws, {
-                  key: String(key),
-                  value,
-                });
 
-                if(set) {
-                    set({
-                        ...data,
-                        key: String(key),
-                        value,
-                    })
+                if(String(key) in data.instance) {
+                    debounced(String(key), value);
+
+                    //@ts-ignore
+                    data.instance[String(key)] = value;
+
+                    if(set) {
+                        set({
+                            ...data,
+                            key: String(key),
+                            value,
+                        });
+                    }
                 }
 
                 return true;
@@ -83,5 +94,14 @@ export default class SetObject extends Socket {
                 return undefined;
             }
         });
+    }
+
+    private static debounce<T extends (...args: any[]) => void> (func: T, delay: number) {
+        let timeoutId: ReturnType<typeof setTimeout>;
+
+        return (...args: Parameters<T>) => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => func(...args), delay);
+        };
     }
 }
