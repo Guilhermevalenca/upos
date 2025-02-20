@@ -18,5 +18,8 @@
   "homepage": "https://github.com/Guilhermevalenca/upos#readme",
   "dependencies": {
     "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.14"
   }
 }
